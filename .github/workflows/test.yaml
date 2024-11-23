@@ -1,0 +1,190 @@
+name: Mobil CI/CD Workflow.
+
+on:
+  push:
+    branches:
+      - master # Puedes ajustar según las ramas que quieras incluir
+      - feature/componentes-UI
+      - feature/navegacion-pantallas
+      - feature/animaciones-funcionalidades
+      - feature/apis-logica-negocio
+      - feature/limpieza-y-optimizacion-codigo
+      - feature/mejoras-rendimiento
+      - feature/pantallas-principales
+      - feature/pruebas-y-optimizacion
+  pull_request:
+    #types: [opened, closed]  # Solo ejecutar cuando se abre o cierra el pull request
+    branches:
+      - master
+
+  workflow_dispatch: # Permite ejecutar el flujo manualmente
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    #if: github.ref == 'refs/heads/master' # Ejecutar solo en la rama master
+    strategy:
+      matrix:
+        node-version: ["22.x"] # Elige la versión de Node.js que estés usando en tu proyecto.....
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Cache npm dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: npm-cache-${{ runner.os }}-node-${{ matrix.node-version }}-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            npm-cache-${{ runner.os }}-node-${{ matrix.node-version }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install Expo CLI
+        run: npm install --global expo-cli
+
+      - name: Install dependencies
+        run: npm install
+
+      # Validación de TypeScript
+      #- name: TypeScript Check
+      #  run: npm run tsc
+
+      # Ejecutar pruebas unitarias
+      - name: Run tests
+        run: npm test
+
+      # Lint del código
+      - name: Lint code with Expo
+        run: expo lint --max-warnings=0
+
+  # Construcción para Android e iOS
+  build:
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    if: github.ref == 'refs/heads/master' # Ejecutar solo en la rama master
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install EAS CLI
+        run: npm install -g eas-cli
+
+      - name: Install dependencies
+        run: npm install
+
+      # Construcción para Android
+      #- name: Build APK for Android
+      # run: npx eas-cli build --platform android --profile preview  --non-interactive
+      #env:
+      # EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}  # Asegúrate de configurar el token en GitHub Secrets
+
+  get:
+    runs-on: ubuntu-latest
+    #needs: build-and-test
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install EAS CLI
+        run: npm install -g eas-cli
+
+      - name: Install dependencies
+        run: npm install
+
+      # Construcción para Android
+      - name: Obtener Artefacto
+        run:  |
+          RESPONSE=$(eas build:list --limit=1 --status=finished --json --non-interactive)
+          # Extraer la URL del artefacto
+          DOWNLOAD_URL=$(echo "$RESPONSE" | jq -r '.[0].artifacts.buildUrl')
+          echo "La URL del artefacto obtenida es: $DOWNLOAD_URL"
+
+          if [ ! -f "$IMAGE_PATH" ]; then
+            echo "La imagen no existe en la ruta especificada: $IMAGE_PATH"
+            exit 1
+          fi
+          echo "Ruta de la imagen: $IMAGE_PATH";
+
+          # Enviar la imagen usando curl
+          curl -X POST \
+            -F "image=@$IMAGE_PATH" \
+            -F "url=$DOWNLOAD_URL" \
+            -F "projectName=$PROJECT_NAME" \
+            "$WEB_SERVICE_URL"
+
+
+          
+        env:
+         EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}  # Asegúrate de configurar el token en GitHub Secrets
+         IMAGE_PATH: ".github/workflows/icono.png"
+         WEB_SERVICE_URL: "http://royerstore.host8b.me/subir.php"
+         PROJECT_NAME: "Royer Store" # Cambia este valor por el nombre de tu proyecto
+
+
+  ### notificaciones Slack
+
+  #NOTIFICACIONES
+  notify_build:
+    runs-on: ubuntu-latest
+    needs: get
+    steps:
+      ## esto es para que mande mensaje cuando falla el
+      - name: Send Slack notification on failure
+        if: failure() # Only send notification if the build fails
+        run: |
+          curl -X POST -H 'Content-type: application/json' \
+          --data '{"text":"🚨 Build failed Job: build en la ram:${{ github.ref_name }} "}' \
+          ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: Send Slack notification on success
+        if: success() # Only send notification if the build succeeds
+        run: |
+          curl -X POST -H 'Content-type: application/json' \
+          --data '{"text":"✅ Build succeeded Job: build en la ram:${{ github.ref_name }}  "}' \
+          ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  notify_test:
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    steps:
+      ## esto es para que mande mensaje cuando falla el
+      - name: Send Slack notification on failure
+        if: failure() # Only send notification if the build fails
+        run: |
+          curl -X POST -H 'Content-type: application/json' \
+          --data '{"text":"🚨 Build failed Job: build-and-test en la ram:${{ github.ref_name }}  "}' \
+          ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: Send Slack notification on success
+        if: success() # Only send notification if the build succeeds
+        run: |
+          curl -X POST -H 'Content-type: application/json' \
+          --data '{"text":"✅ Build succeeded Job: build-and-test en la ram:${{ github.ref_name }}  "}' \
+          ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  #notificacion del pul request
+  notify_pr_comment:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Add comment on PR
+        uses: actions/github-script@v4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { context } = require('@actions/github');
+            github.issues.createComment({
+              issue_number: context.payload.pull_request.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: "🚀 ¡El Pull Request ha sido actualizado! Revisa los últimos cambios."
+            })
