@@ -68,7 +68,7 @@ Notifications.setNotificationChannelAsync('default', {
       if (token) {
         try {
           const response = await fetch(
-          `http://royerstore.host8b.me/enviarToken.php`,
+          `https://robe.host8b.me/royerstore/enviarToken.php`,
             {
               method: "POST",
               headers: {
