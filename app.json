@@ -21,7 +21,8 @@
         "foregroundImage": "./assets/images/icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.ayer.RoyerStore"
+      "package": "com.ayer.RoyerStore",
+      "googleServicesFile": "./google-services.json"
     },
     "web": {
       "bundler": "metro",

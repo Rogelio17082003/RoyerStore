@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "715746314991",
+    "project_id": "apiroyerstore",
+    "storage_bucket": "apiroyerstore.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:715746314991:android:542f10314d58504be4691a",
+        "android_client_info": {
+          "package_name": "com.ayer.RoyerStore"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCQE2SZQhjuVCzZxolWdu0Q3m4B3_vUlqE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
