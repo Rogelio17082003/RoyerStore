@@ -54,19 +54,19 @@ jobs:
         run: expo lint --max-warnings=0
 
   # Construcción para Android e iOS
-  build:
-    runs-on: ubuntu-latest
-    needs: build-and-test
-    if: github.ref == 'refs/heads/master' # Ejecutar solo en la rama master
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+  #build:
+    #runs-on: ubuntu-latest
+    #needs: build-and-test
+    #if: github.ref == 'refs/heads/master' # Ejecutar solo en la rama master
+    #steps:
+      #- name: Checkout code
+        #uses: actions/checkout@v3
 
-      - name: Install EAS CLI
-        run: npm install -g eas-cli
+      #- name: Install EAS CLI
+        #run: npm install -g eas-cli
 
-      - name: Install dependencies
-        run: npm install
+      #- name: Install dependencies
+        #run: npm install
 
       # Construcción para Android
       #- name: Build APK for Android
