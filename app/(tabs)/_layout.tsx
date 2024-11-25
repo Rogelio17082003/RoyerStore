@@ -29,11 +29,13 @@ export default function TabLayout() {
       }}>
       <Tabs.Screen
         name="index"
-        options={{
+        options={({ route }) => ({
           title: 'Aplicaciones',
+          headerTitle: route.name === 'index' ? 'Royer Store' : 'Otro Título',
           tabBarIcon: ({ color }) => (
             <Ionicons name="apps" size={24} color={color} />
-          )}}
+          ),
+        })}
       />
       <Tabs.Screen
         name="two"

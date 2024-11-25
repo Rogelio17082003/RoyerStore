@@ -118,64 +118,6 @@ jobs:
          PROJECT_NAME: "Royer Store" # Cambia este valor por el nombre de tu proyecto
 
 
-  ### notificaciones Slack
 
-  #NOTIFICACIONES
-  notify_build:
-    runs-on: ubuntu-latest
-    needs: get
-    steps:
-      ## esto es para que mande mensaje cuando falla el
-      - name: Send Slack notification on failure
-        if: failure() # Only send notification if the build fails
-        run: |
-          curl -X POST -H 'Content-type: application/json' \
-          --data '{"text":"🚨 Build failed Job: build en la ram:${{ github.ref_name }} "}' \
-          ${{ secrets.SLACK_WEBHOOK_URL }}
 
-      - name: Send Slack notification on success
-        if: success() # Only send notification if the build succeeds
-        run: |
-          curl -X POST -H 'Content-type: application/json' \
-          --data '{"text":"✅ Build succeeded Job: build en la ram:${{ github.ref_name }}  "}' \
-          ${{ secrets.SLACK_WEBHOOK_URL }}
 
-  notify_test:
-    runs-on: ubuntu-latest
-    needs: build-and-test
-    steps:
-      ## esto es para que mande mensaje cuando falla el
-      - name: Send Slack notification on failure
-        if: failure() # Only send notification if the build fails
-        run: |
-          curl -X POST -H 'Content-type: application/json' \
-          --data '{"text":"🚨 Build failed Job: build-and-test en la ram:${{ github.ref_name }}  "}' \
-          ${{ secrets.SLACK_WEBHOOK_URL }}
-
-      - name: Send Slack notification on success
-        if: success() # Only send notification if the build succeeds
-        run: |
-          curl -X POST -H 'Content-type: application/json' \
-          --data '{"text":"✅ Build succeeded Job: build-and-test en la ram:${{ github.ref_name }}  "}' \
-          ${{ secrets.SLACK_WEBHOOK_URL }}
-
-  #notificacion del pul request
-  notify_pr_comment:
-    runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Add comment on PR
-        uses: actions/github-script@v4
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const { context } = require('@actions/github');
-            github.issues.createComment({
-              issue_number: context.payload.pull_request.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: "🚀 ¡El Pull Request ha sido actualizado! Revisa los últimos cambios."
-            })
