@@ -4,14 +4,7 @@ on:
   push:
     branches:
       - master # Puedes ajustar según las ramas que quieras incluir
-      - feature/componentes-UI
-      - feature/navegacion-pantallas
-      - feature/animaciones-funcionalidades
-      - feature/apis-logica-negocio
-      - feature/limpieza-y-optimizacion-codigo
-      - feature/mejoras-rendimiento
-      - feature/pantallas-principales
-      - feature/pruebas-y-optimizacion
+     
   pull_request:
     #types: [opened, closed]  # Solo ejecutar cuando se abre o cierra el pull request
     branches:
