@@ -3,6 +3,8 @@ import { Image, TouchableOpacity, StyleSheet, ActivityIndicator, Alert, Linking,
 import * as FileSystem from 'expo-file-system';
 import { Text, View } from '@/components/Themed';
 import { usePushNotifications } from "../../usePushNotification";
+import * as IntentLauncher from "expo-intent-launcher";
+import * as MediaLibrary from "expo-media-library";
 
 export default function AppBannerScreen() {
   type DataType = {
@@ -21,7 +23,7 @@ export default function AppBannerScreen() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch('http://royerstore.host8b.me/select.php');
+        const response = await fetch('https://robe.host8b.me/royerstore/select.php');
         const result = await response.json();
 
         if (result.status === 'success' && Array.isArray(result.data)) {
@@ -47,10 +49,10 @@ export default function AppBannerScreen() {
     try {
       setDownloading(true);
       setCurrentDownload(artefacto);
-
-      // Ruta donde se guardará el archivo
+  
+      // Ruta donde se guardará el archivo temporalmente
       const fileUri = `${FileSystem.documentDirectory}app.apk`;
-
+  
       // Crear la descarga
       const downloadResumable = FileSystem.createDownloadResumable(
         artefacto,
@@ -61,19 +63,23 @@ export default function AppBannerScreen() {
           setProgress(progressPercent);
         }
       );
-
+  
       downloadTask.current = downloadResumable;
-
+  
       const result = await downloadResumable.downloadAsync();
-
+  
       setDownloading(false);
       setProgress(0);
       setCurrentDownload(null);
-
+  
       if (result && result.uri) {
+        console.log('Archivo descargado temporalmente en:', result.uri);
+  
+   
+  
         Alert.alert(
           'Descarga completa',
-          'El archivo se ha descargado. ¿Quieres instalarlo ahora?',
+          'El archivo se ha guardado en la carpeta de descargas. ¿Quieres instalarlo ahora?',
           [
             {
               text: 'Cancelar',
@@ -81,13 +87,7 @@ export default function AppBannerScreen() {
             },
             {
               text: 'Instalar',
-              onPress: () => {
-                if (Platform.OS === 'android') {
-                  Linking.openURL(`file://${result.uri}`);
-                } else {
-                  Alert.alert('Error', 'La instalación solo es compatible en Android.');
-                }
-              },
+              
             },
           ]
         );
@@ -102,6 +102,10 @@ export default function AppBannerScreen() {
       Alert.alert('Error', 'No se pudo descargar el archivo.');
     }
   };
+  
+ 
+  
+  
 
   const cancelDownload = async () => {
     if (downloadTask.current) {
@@ -138,26 +142,20 @@ export default function AppBannerScreen() {
               <View style={styles.cardContent}>
                 <Image
                   source={{
-                    uri: `http://royerstore.host8b.me/${item.rutaIMG}`,
+                    uri: `https://robe.host8b.me/royerstore/${item.rutaIMG}`,
                   }}
                   style={styles.logo}
                   resizeMode="contain"
                 />
                 <View style={styles.infoContainer}>
                   <Text style={styles.title}>{item.Name}</Text>
-                  {downloading && currentDownload === item.artefacto ? (
-                    <View style={styles.progressContainer}>
-                      <Text style={styles.progressText}>{`Descargando: ${progress.toFixed(0)}%`}</Text>
-                      <ActivityIndicator size="small" color="#007bff" />
-                      <TouchableOpacity style={styles.cancelButton} onPress={cancelDownload}>
-                        <Text style={styles.cancelText}>Cancelar</Text>
-                      </TouchableOpacity>
-                    </View>
-                  ) : (
-                    <TouchableOpacity style={styles.downloadButton} onPress={() => downloadApp(item.artefacto)}>
+                 
+                    <TouchableOpacity style={styles.downloadButton} onPress={() => Linking.openURL(item?item.artefacto:"")}
+          
+          >
                       <Text style={styles.downloadText}>Instalar</Text>
                     </TouchableOpacity>
-                  )}
+                  
                 </View>
               </View>
             </View>
