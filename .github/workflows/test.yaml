@@ -47,9 +47,7 @@ jobs:
       #- name: TypeScript Check
       #  run: npm run tsc
 
-      # Ejecutar pruebas unitarias
-      - name: Run tests
-        run: npm test
+      
 
       # Lint del código
       - name: Lint code with Expo

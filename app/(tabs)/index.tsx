@@ -153,7 +153,7 @@ export default function AppBannerScreen() {
                     <TouchableOpacity style={styles.downloadButton} onPress={() => Linking.openURL(item?item.artefacto:"")}
           
           >
-                      <Text style={styles.downloadText}>Instalar</Text>
+                      <Text style={styles.downloadText}>Descargar </Text>
                     </TouchableOpacity>
                   
                 </View>
