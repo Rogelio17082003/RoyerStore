@@ -115,7 +115,7 @@ jobs:
          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}  # Asegúrate de configurar el token en GitHub Secrets
          IMAGE_PATH: ".github/workflows/icono.png"
          WEB_SERVICE_URL: "https://robe.host8b.me/royerstore/subir.php"
-         PROJECT_NAME: "Royer Store" # Cambia este valor por el nombre de tu proyecto
+         PROJECT_NAME: "Royer Store" # Cambia este valor por el nombre de tu proyecto s
 
 
 
